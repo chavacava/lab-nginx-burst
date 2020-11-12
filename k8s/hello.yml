@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: hello
+        tier: backend
+    spec:
+      containers:
+      - name: hello
+        image: localhost:5000/hello
+        ports:
+          - name: http
+            containerPort: 8080
+

@@ -1,11 +1,13 @@
 # Testbench for burst handling with NGINX
-This repo contains a minimal testbench for experimenting with burst handling using NGINX.
+This repo contains two versions of a a minimal testbench for experimenting with burst handling using NGINX.
+
+## Local Testbench
 
 The test bench consists in a dummy service and a NGINX proxy in front of it:
 
 ```
                #===========#          #===========#
-localhost:80/  |   NGINX   |   :8080/ |   Dummy   |
+localhost:80/  |   NGINX   |   :8080/ |   Hello   |
 -------------> |   proxy   | -------> |  service  |
                #===========#          #===========#
 ```
@@ -16,7 +18,7 @@ The service single endpoint is `/`, that is it will successfully respond to requ
 
 /!\ requests on port `8080` will directly point to the service without passing through the proxy.
 
-## Requirements
+### Requirements
 
 To run tests you will need:
 
@@ -26,7 +28,7 @@ To run tests you will need:
 1. a load testing tool like `vegeta` or `ab`
 
 
-## Test steps
+### Test steps
 
 1. Modify NGINX configuration (`vim ./nginx/nginx.conf` for example)
 1. Deploy the services `./deploy.sh`
@@ -39,6 +41,59 @@ To run tests you will need:
 1. `goto 1`
 
 To stop all the test-bench you can do `docker-compose down`
+
+## K8S-based Testbench
+
+
+```
+                   #===========#          #===========#       #===========#          #===========#
+proxy-service:80/  |   proxy   |     :80/ |   NGINX   | :80/  |   Hello   |   :8080/ |   Hello   |
+-----------------> |  service  | -------> |   proxy   |-----> |   service | -------> |   server  |
+                   #===========#          #===========#       #===========#          #===========#
+```
+
+### Requirements
+
+To run tests you will need:
+
+1. access to internet
+1. `docker`
+1. a k8s cluster
+
+### Local and Remote K8S clusters
+
+If you have `kind` installed in your PC you can:
+1. create a local k8s cluster with  
+```
+k8s/local/kind-with-registry.sh
+```
+1. modify `nginx\nginx.conf` with:
+```
+  upstream svcfarm {
+    server hello-service;
+  }
+```
+1. build images and push them to the local registry: 
+```
+k8s/local/build-images-and-push-to-local-registry.sh
+```
+1. deploy the components of the testbench: 
+```
+k8s/deploy.sh
+``` 
+
+To stop all the test-bench you can do 
+```
+k8s/local/stop-kind-with-registry.sh
+```
+
+Launching test:
+```
+kubectl exec vegeta-pod-name -- /bin/sh -c "echo 'GET http://proxy-service/' | vegeta attack -timeout 100s -rate 2000/s -duration 5s -workers 1 | vegeta report"
+```
+
+For remote K8S clusters you can reproduce these steps (no helper scripts are provided)
+Please tacke into account that the deployment manifests (`.yml`) make reference to images in the **local** image registry thus they must be adapted to point to a remote registry.
 
 # Doc on configuring NGINX
 

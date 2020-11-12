@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vegeta
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: vegeta
+  template:
+    metadata:
+      labels:
+        app: vegeta
+    spec:
+      containers:
+      - name: vegeta
+        image: peterevans/vegeta
+        command: ["/bin/sh", "-c"]
+        args: ["while true; do sleep 3600; done;"]
+

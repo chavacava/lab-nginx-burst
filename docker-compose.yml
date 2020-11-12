@@ -5,13 +5,13 @@ services:
     build: nginx/.
     network_mode: host
   svc1:
-    build: service/.
+    build: hello/.
     ports:
       - "8080:8080"
 
   # Uncomment the following block to start a second instance of the service
   # svc2:
-  #       build: service/.
+  #       build: hello/.
   #       ports:
   #         - "8081:8080" # Notice the port is 8081
   

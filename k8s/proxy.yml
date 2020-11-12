@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-proxy
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: hello-proxy
+        tier: frontend
+    spec:
+      containers:
+      - name: hello-proxy
+        image: localhost:5000/nginx 
+        ports:
+          - name: http
+            containerPort: 80
